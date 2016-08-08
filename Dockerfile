@@ -40,4 +40,4 @@ RUN apk update && apk add curl && /build.sh && apk del curl && \
     rm -rf /tmp/* /var/tmp/* /var/cache/apk/*
 ADD packetbeat.yml /packetbeat
 
-ENTRYPOINT /packetbeat/packetbeat
+CMD [ "/packetbeat/packetbeat", "-e" ]

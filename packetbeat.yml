@@ -54,6 +54,26 @@ protocols:
     # hide_keywords: ['pass', 'password', 'passwd']
     hide_keywords: [${HTTP_HIDE_KEYWORDS:'pass', 'password', 'passwd'}]
 
+    # A list of header names to capture and send to Elasticsearch. These headers
+    # are placed under the `headers` dictionary in the resulting JSON.
+    send_headers: ${HTTP_SEND_HEADERS}
+
+    # Instead of sending a white list of headers to Elasticsearch, you can send
+    # all headers by setting this option to true. The default is false.
+    send_all_headers: ${HTTP_SEND_ALL_HEADERS}
+
+    # The list of content types for which Packetbeat includes the full HTTP
+    # payload in the response field.
+    include_body_for: [$HTTP_INCLUDE_BODY_FOR]
+
+    # If this option is enabled, the raw message of the request (`request` field)
+    # is sent to Elasticsearch. The default is false.
+    send_request: ${HTTP_SEND_REQUEST:false}
+
+    # If this option is enabled, the raw message of the response (`response`
+    # field) is sent to Elasticsearch. The default is false.
+    send_response: ${HTTP_SEND_RESPONSE:false}
+
 #  memcache:
 #    # Configure the ports where to listen for memcache traffic. You can disable
 #    # the Memcache protocol by commenting out the list of ports.
@@ -249,7 +269,7 @@ output:
     hosts: ["${LOGSTASH_HOSTS:'localhost:5044'}"]
 
     # Number of workers per Logstash host.
-    #worker: 1
+    worker: ${LOGSTASH_WORKER:1}
 
     # Set gzip compression level.
     #compression_level: 3
@@ -321,12 +341,12 @@ shipper:
   # The tags of the shipper are included in their own field with each
   # transaction published. Tags make it easy to group servers by different
   # logical properties.
-  tags: [${SHIPPPER_TAGS:'"service-X", "web-tier"'}]
+  tags: [${SHIPPPER_TAGS:'"tags-neglected"'}]
 
   # Uncomment the following if you want to ignore transactions created
   # by the server on which the shipper is installed. This option is useful
   # to remove duplicates if shippers are installed on multiple servers.
-  ignore_outgoing: ${SHIPPER_IGNORE_OUTGOING}
+  ignore_outgoing: ${SHIPPER_IGNORE_OUTGOING:false}
 
   # How often (in seconds) shippers are publishing their IPs to the topology map.
   # The default is 10 seconds.
