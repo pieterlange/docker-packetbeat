@@ -13,32 +13,45 @@
 # Select the network interfaces to sniff the data. You can use the "any"
 # keyword to sniff on all connected interfaces.
 interfaces:
-  device: any
+  device: ${INTERFACES_DEVICE:"any"}
+
+  # Packetbeat supports three sniffer types:
+  # * pcap, which uses the libpcap library and works on most platforms, but it's
+  # not the fastest option.
+  # * af_packet, which uses memory-mapped sniffing. This option is faster than
+  # libpcap and doesn't require a kernel module, but it's Linux-specific.
+  # * pf_ring, which makes use of an ntop.org project. This setting provides the
+  # best sniffing speed, but it requires a kernel module, and it's Linux-specific.
+  # The default sniffer type is pcap.
+  type: ${INTERFACES_TYPE:"pcap"}
 
 ############################# Protocols #######################################
 protocols:
-#  dns:
-#    # Configure the ports where to listen for DNS traffic. You can disable
-#    # the DNS protocol by commenting out the list of ports.
-#    ports: [53]
-#
-#    # include_authorities controls whether or not the dns.authorities field
-#    # (authority resource records) is added to messages.
-#    # Default: false
-#    include_authorities: true
-#    # include_additionals controls whether or not the dns.additionals field
-#    # (additional resource records) is added to messages.
-#    # Default: false
-#    include_additionals: true
-#
-#    # send_request and send_response control whether or not the stringified DNS
-#    # request and response message are added to the result.
-#    # Nearly all data about the request/response is available in the dns.*
-#    # fields, but this can be useful if you need visibility specifically
-#    # into the request or the response.
-#    # Default: false
-#    # send_request:  true
-#    # send_response: true
+  dns:
+    # Enable DNS monitoring. Default: true
+    enabled: ${DNS_ENABLED:true}
+
+    # Configure the ports where to listen for DNS traffic. You can disable
+    # the DNS protocol by commenting out the list of ports.
+    ports: [${DNS_PORTS:53}]
+
+    # include_authorities controls whether or not the dns.authorities field
+    # (authority resource records) is added to messages.
+    # Default: false
+    include_authorities: ${DNS_INCLUDE_AUTHORITIES:true}
+    # include_additionals controls whether or not the dns.additionals field
+    # (additional resource records) is added to messages.
+    # Default: false
+    include_additionals: ${DNS_INCLUDE_ADDITIONALS:true}
+
+    # send_request and send_response control whether or not the stringified DNS
+    # request and response message are added to the result.
+    # Nearly all data about the request/response is available in the dns.*
+    # fields, but this can be useful if you need visibility specifically
+    # into the request or the response.
+    # Default: false
+    # send_request:  true
+    # send_response: true
 
   http:
     # Configure the ports where to listen for HTTP traffic. You can disable
@@ -56,11 +69,11 @@ protocols:
 
     # A list of header names to capture and send to Elasticsearch. These headers
     # are placed under the `headers` dictionary in the resulting JSON.
-    send_headers: ${HTTP_SEND_HEADERS}
+    send_headers: [${HTTP_SEND_HEADERS:'Content-Type', 'Host', 'User-Agent', 'X-Request-Id'}]
 
     # Instead of sending a white list of headers to Elasticsearch, you can send
     # all headers by setting this option to true. The default is false.
-    send_all_headers: ${HTTP_SEND_ALL_HEADERS}
+    send_all_headers: ${HTTP_SEND_ALL_HEADERS:false}
 
     # The list of content types for which Packetbeat includes the full HTTP
     # payload in the response field.
@@ -74,10 +87,21 @@ protocols:
     # field) is sent to Elasticsearch. The default is false.
     send_response: ${HTTP_SEND_RESPONSE:false}
 
-#  memcache:
-#    # Configure the ports where to listen for memcache traffic. You can disable
-#    # the Memcache protocol by commenting out the list of ports.
-#    ports: [11211]
+    # The header field to extract the real IP from. This setting is useful when
+    # you want to capture traffic behind a reverse proxy, but you want to get the
+    # geo-location information.
+    real_ip_header: ${HTTP_REAL_IP_HEADER:"X-Real-IP"}
+
+    # If the Cookie or Set-Cookie headers are sent, this option controls whether
+    # they are split into individual values.
+    split_cookie: ${HTTP_SPLIT_COOKIE:false}
+
+  memcache:
+    enabled: ${MEMCACHE_ENABLED:false}
+
+    # Configure the ports where to listen for memcache traffic. You can disable
+    # the Memcache protocol by commenting out the list of ports.
+    ports: [${MEMCACHE_PORTS:11211}]
 
     # Uncomment the parseunknown option to force the memcache text protocol parser
     # to accept unknown commands.
@@ -108,12 +132,30 @@ protocols:
     # Default: 200
     # udptransactiontimeout: 1000
 
-#  mysql:
-#    # Configure the ports where to listen for MySQL traffic. You can disable
-#    # the MySQL protocol by commenting out the list of ports.
-#    ports: [3306]
+  mysql:
+    # Enable mysql monitoring. Default: false
+    enabled: ${MYSQL_ENABLED:false}
+
+    # Configure the ports where to listen for MySQL traffic. You can disable
+    # the MySQL protocol by commenting out the list of ports.
+    ports: [${MYSQL_PORTS:3306}]
+
+    # If this option is enabled, the raw message of the request (`request` field)
+    # is sent to Elasticsearch. The default is false.
+    send_request: ${MYSQL_SEND_REQUEST:false}
+
+    # If this option is enabled, the raw message of the response (`response`
+    # field) is sent to Elasticsearch. The default is false.
+    send_response: ${MYSQL_SEND_RESPONSE:false}
+
+    # Transaction timeout. Expired transactions will no longer be correlated to
+    # incoming responses, but sent to Elasticsearch immediately.
+    transaction_timeout: ${MYSQL_TRANSACTION_TIMEOUT:10}
 
   pgsql:
+    # Enable pgsql monitoring. Default: true
+    enabled: ${PGSQL_ENABLED:true}
+
     # Configure the ports where to listen for Pgsql traffic. You can disable
     # the Pgsql protocol by commenting out the list of ports.
     ports: [${PGSQL_PORTS:5432}]
@@ -128,9 +170,12 @@ protocols:
 
     # Transaction timeout. Expired transactions will no longer be correlated to
     # incoming responses, but sent to Elasticsearch immediately.
-    transaction_timeout: ${PGSQL_TRANSACTION_TIMEOUT:10s}
+    transaction_timeout: ${PGSQL_TRANSACTION_TIMEOUT:10}
 
   redis:
+    # Enable redis monitoring. Default: true
+    enabled: ${REDIS_ENABLED:true}
+
     # Configure the ports where to listen for Redis traffic. You can disable
     # the Redis protocol by commenting out the list of ports.
     ports: [${REDIS_PORTS:6379}]
@@ -145,18 +190,20 @@ protocols:
 
     # Transaction timeout. Expired transactions will no longer be correlated to
     # incoming responses, but sent to Elasticsearch immediately.
-    transaction_timeout: ${REDIS_TRANSACTION_TIMEOUT:10s}
+    transaction_timeout: ${REDIS_TRANSACTION_TIMEOUT:10}
 
 
-#  thrift:
-#    # Configure the ports where to listen for Thrift-RPC traffic. You can disable
-#    # the Thrift-RPC protocol by commenting out the list of ports.
-#    ports: [9090]
-#
-#  mongodb:
-#    # Configure the ports where to listen for MongoDB traffic. You can disable
-#    # the MongoDB protocol by commenting out the list of ports.
-#    ports: [27017]
+  thrift:
+    enabled: ${THRIFT_ENABLED:false}
+    # Configure the ports where to listen for Thrift-RPC traffic. You can disable
+    # the Thrift-RPC protocol by commenting out the list of ports.
+    ports: [${THRIFT_PORTS:9090}]
+
+  mongodb:
+    enabled: ${MONGODB_ENABLED:false}
+    # Configure the ports where to listen for MongoDB traffic. You can disable
+    # the MongoDB protocol by commenting out the list of ports.
+    ports: [${MONGODB_PORTS:27017}]
 
 ############################# Processes #######################################
 
@@ -168,8 +215,8 @@ protocols:
 # Process matching is optional and can be enabled by uncommenting the following
 # lines.
 #
-#procs:
-#  enabled: false
+procs:
+  enabled: false
 #  monitored:
 #    - process: mysqld
 #      cmdline_grep: mysqld
@@ -333,6 +380,8 @@ output:
 
   ### File as output
   #file:
+    #enabled: false
+
     # Path to the directory where to save the generated files. The option is mandatory.
     #path: "/tmp/packetbeat"
 
@@ -366,7 +415,7 @@ shipper:
   # The tags of the shipper are included in their own field with each
   # transaction published. Tags make it easy to group servers by different
   # logical properties.
-  tags: [${SHIPPPER_TAGS:'"tags-neglected"'}]
+  tags: [${SHIPPPER_TAGS:'tags-neglected'}]
 
   # Uncomment the following if you want to ignore transactions created
   # by the server on which the shipper is installed. This option is useful
