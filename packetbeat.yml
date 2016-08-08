@@ -64,7 +64,7 @@ protocols:
 
     # The list of content types for which Packetbeat includes the full HTTP
     # payload in the response field.
-    include_body_for: [$HTTP_INCLUDE_BODY_FOR]
+    include_body_for: [${HTTP_INCLUDE_BODY_FOR}]
 
     # If this option is enabled, the raw message of the request (`request` field)
     # is sent to Elasticsearch. The default is false.
@@ -336,7 +336,7 @@ shipper:
   # The name of the shipper that publishes the network data. It can be used to group
   # all the transactions sent by a single shipper in the web interface.
   # If this options is not defined, the hostname is used.
-  name: $SHIPPER_NAME
+  name: ${SHIPPER_NAME}
 
   # The tags of the shipper are included in their own field with each
   # transaction published. Tags make it easy to group servers by different
