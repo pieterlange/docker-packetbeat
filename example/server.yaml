@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debugserver
+  labels:
+    app: debugserver
+spec:
+  volumes:
+  - name: nginx-html
+    configMap:
+      name: debug-nginx-html
+  containers:
+  - image: "nginx:mainline-alpine"
+    name: nginx
+    ports:
+    - containerPort: 80
+    volumeMounts:
+    - mountPath: /usr/share/nginx/html
+      name: nginx-html
+      readOnly: true
+  - image: quay.io/plange/packetbeat:1.2.3
+    imagePullPolicy: Always
+    name: packetbeat
+    securityContext:
+      privileged: true
+    env:
+    - name: SHIPPER_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: LOGSTASH_HOSTS
+      value: logs.default:5044
+    - name: HTTP_SEND_REQUEST
+      value: "true"
+    - name: HTTP_SEND_RESPONSE
+      value: "true"
+    - name: HTTP_INCLUDE_BODY_FOR
+      value: "'text/html', 'text/xml'"
+    - name: REDIS_SEND_REQUEST
+      value: "true"
+    - name: REDIS_SEND_RESPONSE
+      value: "true"
+    - name: HTTP_SEND_ALL_HEADERS
+      value: "false"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: debugserver
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+  selector:
+    app: debugserver
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: debug-nginx-html
+data:
+  index.html: '<!doctype html><html><head><title>Get more coffee</title></head><body>It works!</body></html>'
