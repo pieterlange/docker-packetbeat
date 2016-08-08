@@ -116,13 +116,38 @@ protocols:
   pgsql:
     # Configure the ports where to listen for Pgsql traffic. You can disable
     # the Pgsql protocol by commenting out the list of ports.
-    ports: [5432]
+    ports: [${PGSQL_PORTS:5432}]
 
-#  redis:
-#    # Configure the ports where to listen for Redis traffic. You can disable
-#    # the Redis protocol by commenting out the list of ports.
-#    ports: [6379]
-#
+    # If this option is enabled, the raw message of the request (`request` field)
+    # is sent to Elasticsearch. The default is false.
+    send_request: ${PGSQL_SEND_REQUEST:false}
+
+    # If this option is enabled, the raw message of the response (`response`
+    # field) is sent to Elasticsearch. The default is false.
+    send_response: ${PGSQL_SEND_RESPONSE:false}
+
+    # Transaction timeout. Expired transactions will no longer be correlated to
+    # incoming responses, but sent to Elasticsearch immediately.
+    transaction_timeout: ${PGSQL_TRANSACTION_TIMEOUT:10s}
+
+  redis:
+    # Configure the ports where to listen for Redis traffic. You can disable
+    # the Redis protocol by commenting out the list of ports.
+    ports: [${REDIS_PORTS:6379}]
+
+    # If this option is enabled, the raw message of the request (`request` field)
+    # is sent to Elasticsearch. The default is false.
+    send_request: ${REDIS_SEND_REQUEST:false}
+
+    # If this option is enabled, the raw message of the response (`response`
+    # field) is sent to Elasticsearch. The default is false.
+    send_response: ${REDIS_SEND_RESPONSE:false}
+
+    # Transaction timeout. Expired transactions will no longer be correlated to
+    # incoming responses, but sent to Elasticsearch immediately.
+    transaction_timeout: ${REDIS_TRANSACTION_TIMEOUT:10s}
+
+
 #  thrift:
 #    # Configure the ports where to listen for Thrift-RPC traffic. You can disable
 #    # the Thrift-RPC protocol by commenting out the list of ports.
