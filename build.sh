@@ -3,8 +3,8 @@
 
 set -e
 
-export PACKETBEAT_VERSION="1.2.3"
-export PACKETBEAT_SUM="db2fcf1934f1bebe9da2ed08703d0a9361c3efa2be873a9b91559df8bd2bb1dd"
+export PACKETBEAT_VERSION="1.3.1"
+export PACKETBEAT_SUM="db580a2ad762a958afbe1b214d84d2c9e9087535ffcc50e7ca120fbf883a22e4"
 
 get_src()
 {
