@@ -3,8 +3,8 @@
 
 set -e
 
-export PACKETBEAT_VERSION="1.3.1"
-export PACKETBEAT_SUM="db580a2ad762a958afbe1b214d84d2c9e9087535ffcc50e7ca120fbf883a22e4"
+export PACKETBEAT_VERSION="5.4.0"
+export PACKETBEAT_SUM="facc75f54f1beca48dd03858499e0e05c05ead5d5d8bd28c0ccecd2014b4ae76"
 
 get_src()
 {
@@ -18,7 +18,5 @@ get_src()
   rm -rf "$f"
 }
 get_src $PACKETBEAT_SUM \
-          "https://download.elastic.co/beats/packetbeat/packetbeat-${PACKETBEAT_VERSION}-x86_64.tar.gz"
-
-mv "packetbeat-${PACKETBEAT_VERSION}-x86_64" /packetbeat
-
+          "https://artifacts.elastic.co/downloads/beats/packetbeat/packetbeat-${PACKETBEAT_VERSION}-linux-x86_64.tar.gz"
+mv "packetbeat-${PACKETBEAT_VERSION}-linux-x86_64" /packetbeat
